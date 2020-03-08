@@ -131,40 +131,47 @@ class MarkdownStyleSheet {
   factory MarkdownStyleSheet.fromCupertinoTheme(CupertinoThemeData theme) {
     assert(theme?.textTheme?.textStyle?.fontSize != null);
     return MarkdownStyleSheet(
-      a: const TextStyle(color: CupertinoColors.link),
+      a: theme.textTheme.textStyle.copyWith(
+        color: CupertinoColors.link,
+      ),
       p: theme.textTheme.textStyle,
       code: theme.textTheme.textStyle.copyWith(
         backgroundColor: CupertinoColors.systemGrey6,
         fontFamily: "monospace",
         fontSize: theme.textTheme.textStyle.fontSize * 0.85,
       ),
-      h1: TextStyle(
+      h1: theme.textTheme.textStyle.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: theme.textTheme.textStyle.fontSize + 10,
       ),
-      h2: TextStyle(
+      h2: theme.textTheme.textStyle.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: theme.textTheme.textStyle.fontSize + 8,
       ),
-      h3: TextStyle(
+      h3: theme.textTheme.textStyle.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: theme.textTheme.textStyle.fontSize + 6,
       ),
-      h4: TextStyle(
+      h4: theme.textTheme.textStyle.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: theme.textTheme.textStyle.fontSize + 4,
       ),
-      h5: TextStyle(
+      h5: theme.textTheme.textStyle.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: theme.textTheme.textStyle.fontSize + 2,
       ),
-      h6: TextStyle(
+      h6: theme.textTheme.textStyle.copyWith(
         fontWeight: FontWeight.w500,
-        fontSize: theme.textTheme.textStyle.fontSize,
       ),
-      em: const TextStyle(fontStyle: FontStyle.italic),
-      strong: const TextStyle(fontWeight: FontWeight.bold),
-      del: const TextStyle(decoration: TextDecoration.lineThrough),
+      em: theme.textTheme.textStyle.copyWith(
+        fontStyle: FontStyle.italic,
+      ),
+      strong: theme.textTheme.textStyle.copyWith(
+        fontWeight: FontWeight.bold,
+      ),
+      del: theme.textTheme.textStyle.copyWith(
+        decoration: TextDecoration.lineThrough,
+      ),
       blockquote: theme.textTheme.textStyle,
       img: theme.textTheme.textStyle,
       checkbox: theme.textTheme.textStyle.copyWith(
@@ -173,7 +180,9 @@ class MarkdownStyleSheet {
       blockSpacing: 8,
       listIndent: 24,
       listBullet: theme.textTheme.textStyle,
-      tableHead: const TextStyle(fontWeight: FontWeight.w600),
+      tableHead: theme.textTheme.textStyle.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
       tableBody: theme.textTheme.textStyle,
       tableHeadAlign: TextAlign.center,
       tableBorder: TableBorder.all(color: CupertinoColors.separator, width: 0),
