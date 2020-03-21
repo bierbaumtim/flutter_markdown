@@ -132,11 +132,15 @@ class MarkdownStyleSheet {
     assert(theme?.textTheme?.textStyle?.fontSize != null);
     return MarkdownStyleSheet(
       a: theme.textTheme.textStyle.copyWith(
-        color: CupertinoColors.link,
+        color: theme.brightness == Brightness.dark
+            ? CupertinoColors.link.darkColor
+            : CupertinoColors.link.color,
       ),
       p: theme.textTheme.textStyle,
       code: theme.textTheme.textStyle.copyWith(
-        backgroundColor: CupertinoColors.systemGrey6,
+        backgroundColor: theme.brightness == Brightness.dark
+            ? CupertinoColors.systemGrey6.darkColor
+            : CupertinoColors.systemGrey6.color,
         fontFamily: "monospace",
         fontSize: theme.textTheme.textStyle.fontSize * 0.85,
       ),
@@ -188,25 +192,37 @@ class MarkdownStyleSheet {
       tableBorder: TableBorder.all(color: CupertinoColors.separator, width: 0),
       tableColumnWidth: const FlexColumnWidth(),
       tableCellsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      tableCellsDecoration: BoxDecoration(color: CupertinoColors.systemGrey6),
+      tableCellsDecoration: BoxDecoration(
+        color: theme.brightness == Brightness.dark
+            ? CupertinoColors.systemGrey6.darkColor
+            : CupertinoColors.systemGrey6.color,
+      ),
       blockquotePadding: const EdgeInsets.all(16),
-      blockquoteDecoration: const BoxDecoration(
-        color: CupertinoColors.systemGrey6,
+      blockquoteDecoration: BoxDecoration(
+        color: theme.brightness == Brightness.dark
+            ? CupertinoColors.systemGrey6.darkColor
+            : CupertinoColors.systemGrey6.color,
         border: Border(
           left: BorderSide(
-            color: CupertinoColors.systemGrey4,
+            color: theme.brightness == Brightness.dark
+                ? CupertinoColors.systemGrey4.darkColor
+                : CupertinoColors.systemGrey4.color,
             width: 4,
           ),
         ),
       ),
       codeblockPadding: const EdgeInsets.all(8),
-      codeblockDecoration: const BoxDecoration(
-        color: CupertinoColors.systemGrey6,
+      codeblockDecoration: BoxDecoration(
+        color: theme.brightness == Brightness.dark
+            ? CupertinoColors.systemGrey6.darkColor
+            : CupertinoColors.systemGrey6.color,
       ),
-      horizontalRuleDecoration: const BoxDecoration(
+      horizontalRuleDecoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: CupertinoColors.systemGrey4,
+            color: theme.brightness == Brightness.dark
+                ? CupertinoColors.systemGrey4.darkColor
+                : CupertinoColors.systemGrey4.color,
             width: 1,
           ),
         ),
