@@ -81,7 +81,6 @@ class MarkdownStyleSheet {
       a: const TextStyle(color: Colors.blue),
       p: theme.textTheme.body1,
       code: theme.textTheme.body1.copyWith(
-        backgroundColor: Colors.grey.shade200,
         fontFamily: "monospace",
         fontSize: theme.textTheme.body1.fontSize * 0.85,
       ),
@@ -105,10 +104,13 @@ class MarkdownStyleSheet {
       tableHead: const TextStyle(fontWeight: FontWeight.w600),
       tableBody: theme.textTheme.body1,
       tableHeadAlign: TextAlign.center,
-      tableBorder: TableBorder.all(color: Colors.grey.shade300, width: 0),
+      tableBorder: TableBorder.all(
+        color: theme.dividerColor,
+        width: 1,
+      ),
       tableColumnWidth: const FlexColumnWidth(),
       tableCellsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      tableCellsDecoration: BoxDecoration(color: Colors.grey.shade50),
+      tableCellsDecoration: const BoxDecoration(),
       blockquotePadding: const EdgeInsets.all(8.0),
       blockquoteDecoration: BoxDecoration(
         color: Colors.blue.shade100,
@@ -116,12 +118,15 @@ class MarkdownStyleSheet {
       ),
       codeblockPadding: const EdgeInsets.all(8.0),
       codeblockDecoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: theme.cardTheme?.color ?? theme.cardColor,
         borderRadius: BorderRadius.circular(2.0),
       ),
       horizontalRuleDecoration: BoxDecoration(
         border: Border(
-          top: BorderSide(width: 5.0, color: Colors.grey.shade300),
+          top: BorderSide(
+            width: 5.0,
+            color: theme.dividerColor,
+          ),
         ),
       ),
     );
@@ -239,7 +244,6 @@ class MarkdownStyleSheet {
       a: const TextStyle(color: Colors.blue),
       p: theme.textTheme.body1,
       code: theme.textTheme.body1.copyWith(
-        backgroundColor: Colors.grey.shade200,
         fontFamily: "monospace",
         fontSize: theme.textTheme.body1.fontSize * 0.85,
       ),
@@ -263,10 +267,12 @@ class MarkdownStyleSheet {
       tableHead: const TextStyle(fontWeight: FontWeight.w600),
       tableBody: theme.textTheme.body1,
       tableHeadAlign: TextAlign.center,
-      tableBorder: TableBorder.all(color: Colors.grey.shade300),
+      tableBorder: TableBorder.all(
+        color: theme.dividerColor,
+      ),
       tableColumnWidth: const FlexColumnWidth(),
       tableCellsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      tableCellsDecoration: BoxDecoration(color: Colors.grey.shade50),
+      tableCellsDecoration: const BoxDecoration(),
       blockquotePadding: const EdgeInsets.all(8.0),
       blockquoteDecoration: BoxDecoration(
         color: Colors.blue.shade100,
@@ -274,12 +280,15 @@ class MarkdownStyleSheet {
       ),
       codeblockPadding: const EdgeInsets.all(8.0),
       codeblockDecoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: theme.cardTheme?.color ?? theme.cardColor,
         borderRadius: BorderRadius.circular(2.0),
       ),
       horizontalRuleDecoration: BoxDecoration(
         border: Border(
-          top: BorderSide(width: 5.0, color: Colors.grey.shade300),
+          top: BorderSide(
+            width: 5.0,
+            color: theme.dividerColor,
+          ),
         ),
       ),
     );
