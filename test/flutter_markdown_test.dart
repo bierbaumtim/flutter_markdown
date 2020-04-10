@@ -773,6 +773,7 @@ void main() {
       expect(style.code.color, theme.textTheme.body1.color);
       expect(style.code.fontSize, theme.textTheme.body1.fontSize * 0.85);
       expect(style.code.fontFamily, 'monospace');
+      expect(style.code.backgroundColor, theme.cardColor);
 
       // H1
       expect(style.h1, theme.textTheme.headline);
@@ -794,12 +795,15 @@ void main() {
 
       // em
       expect(style.em.fontStyle, FontStyle.italic);
+      expect(style.em.color, theme.textTheme.body1.color);
 
       // strong
       expect(style.strong.fontWeight, FontWeight.bold);
+      expect(style.strong.color, theme.textTheme.body1.color);
 
       // del
       expect(style.del.decoration, TextDecoration.lineThrough);
+      expect(style.del.color, theme.textTheme.body1.color);
 
       // blockqoute
       expect(style.blockquote, theme.textTheme.body1);
