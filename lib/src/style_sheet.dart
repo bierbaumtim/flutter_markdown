@@ -81,6 +81,7 @@ class MarkdownStyleSheet {
       a: const TextStyle(color: Colors.blue),
       p: theme.textTheme.body1,
       code: theme.textTheme.body1.copyWith(
+        backgroundColor: theme.cardTheme?.color ?? theme.cardColor,
         fontFamily: "monospace",
         fontSize: theme.textTheme.body1.fontSize * 0.85,
       ),
@@ -244,6 +245,7 @@ class MarkdownStyleSheet {
       a: const TextStyle(color: Colors.blue),
       p: theme.textTheme.body1,
       code: theme.textTheme.body1.copyWith(
+        backgroundColor: theme.cardTheme?.color ?? theme.cardColor,
         fontFamily: "monospace",
         fontSize: theme.textTheme.body1.fontSize * 0.85,
       ),
