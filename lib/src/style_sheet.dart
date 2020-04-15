@@ -277,7 +277,7 @@ class MarkdownStyleSheet {
       tableCellsDecoration: const BoxDecoration(),
       blockquotePadding: const EdgeInsets.all(8.0),
       blockquoteDecoration: BoxDecoration(
-        color: Colors.blue.shade100,
+        color: theme.cardTheme?.color ?? theme.cardColor,
         borderRadius: BorderRadius.circular(2.0),
       ),
       codeblockPadding: const EdgeInsets.all(8.0),
