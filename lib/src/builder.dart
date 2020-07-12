@@ -99,6 +99,7 @@ class MarkdownBuilder implements md.NodeVisitor {
     @required this.imageDirectory,
     @required this.imageBuilder,
     @required this.checkboxBuilder,
+    @required this.builders,
     this.fitContent = false,
   });
 
@@ -122,6 +123,9 @@ class MarkdownBuilder implements md.NodeVisitor {
   /// Call when build a checkbox widget.
   final MarkdownCheckboxBuilder checkboxBuilder;
 
+  /// Call when build a custom widget.
+  final Map<String, MarkdownElementBuilder> builders;
+
   /// Whether to allow the widget to fit the child content.
   final bool fitContent;
 
@@ -132,6 +136,7 @@ class MarkdownBuilder implements md.NodeVisitor {
   final List<GestureRecognizer> _linkHandlers = <GestureRecognizer>[];
   String _currentBlockTag;
   bool _isInBlockquote = false;
+  final List<String> _tags = <String>[];
 
   /// Returns widgets that display the given Markdown nodes.
   ///
@@ -143,6 +148,7 @@ class MarkdownBuilder implements md.NodeVisitor {
     _inlines.clear();
     _linkHandlers.clear();
     _isInBlockquote = false;
+    _tags.clear();
 
     _blocks.add(_BlockElement(null));
 
@@ -154,6 +160,7 @@ class MarkdownBuilder implements md.NodeVisitor {
     assert(_tables.isEmpty);
     assert(_inlines.isEmpty);
     assert(!_isInBlockquote);
+    assert(_tags.isEmpty);
     return _blocks.single.children;
   }
 
@@ -161,6 +168,11 @@ class MarkdownBuilder implements md.NodeVisitor {
   bool visitElementBefore(md.Element element) {
     final String tag = element.tag;
     if (_currentBlockTag == null) _currentBlockTag = tag;
+
+    if (builders.containsKey(tag)) {
+      builders[tag].visitElementBefore(element);
+    }
+
     if (_isBlockTag(tag)) {
       _addAnonymousBlockIfNeeded();
       if (_isListTag(tag)) {
@@ -204,7 +216,10 @@ class MarkdownBuilder implements md.NodeVisitor {
     _addParentInlineIfNeeded(_blocks.last.tag);
 
     Widget child;
-    if (_blocks.last.tag == 'pre') {
+    if (_tags.isNotEmpty && builders.containsKey(_tags.last)) {
+      child =
+          builders[_tags.last].visitText(text, styleSheet.styles[_tags.last]);
+    } else if (_blocks.last.tag == 'pre') {
       child = Scrollbar(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -218,7 +233,7 @@ class MarkdownBuilder implements md.NodeVisitor {
           style: _isInBlockquote
               ? _inlines.last.style.merge(styleSheet.blockquote)
               : _inlines.last.style,
-          text: text.text,
+          text: text.text.replaceAll(RegExp(r" ?\n"), " "),
           recognizer: _linkHandlers.isNotEmpty ? _linkHandlers.last : null,
         ),
         textAlign: _textAlignForBlockTag(_currentBlockTag),
@@ -264,8 +279,10 @@ class MarkdownBuilder implements md.NodeVisitor {
           } else {
             bullet = _buildBullet(_listIndents.last);
           }
+          // See #147 and #169
           child = Row(
-            crossAxisAlignment: CrossAxisAlignment.start, // See #147
+            textBaseline: TextBaseline.alphabetic,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
             children: <Widget>[
               SizedBox(
                 width: styleSheet.listIndent,
@@ -297,10 +314,7 @@ class MarkdownBuilder implements md.NodeVisitor {
           child: child,
         );
       } else if (tag == 'hr') {
-        child = DecoratedBox(
-          decoration: styleSheet.horizontalRuleDecoration,
-          child: child,
-        );
+        child = Container(decoration: styleSheet.horizontalRuleDecoration);
       }
 
       _addBlockChild(child);
@@ -308,9 +322,17 @@ class MarkdownBuilder implements md.NodeVisitor {
       final _InlineElement current = _inlines.removeLast();
       final _InlineElement parent = _inlines.last;
 
-      if (tag == 'img') {
+      if (builders.containsKey(tag)) {
+        final Widget child =
+            builders[tag].visitElementAfter(element, styleSheet.styles[tag]);
+        if (child != null) current.children[0] = child;
+      } else if (tag == 'img') {
         // create an image widget for this image
-        current.children.add(_buildImage(element.attributes['src']));
+        current.children.add(_buildImage(
+          element.attributes['src'],
+          element.attributes['title'],
+          element.attributes['alt'],
+        ));
       } else if (tag == 'br') {
         current.children.add(_buildRichText(const TextSpan(text: '\n')));
       } else if (tag == 'th' || tag == 'td') {
@@ -349,7 +371,7 @@ class MarkdownBuilder implements md.NodeVisitor {
     if (_currentBlockTag == tag) _currentBlockTag = null;
   }
 
-  Widget _buildImage(String src) {
+  Widget _buildImage(String src, String title, String alt) {
     final List<String> parts = src.split('#');
     if (parts.isEmpty) return const SizedBox();
 
@@ -367,7 +389,7 @@ class MarkdownBuilder implements md.NodeVisitor {
     Uri uri = Uri.parse(path);
     Widget child;
     if (imageBuilder != null) {
-      child = imageBuilder(uri);
+      child = imageBuilder(uri, title, alt);
     } else {
       child = kDefaultImageBuilder(uri, imageDirectory, width, height);
     }
