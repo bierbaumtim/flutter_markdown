@@ -826,10 +826,12 @@ void main() {
     testWidgets('merge', (WidgetTester tester) async {
       final ThemeData theme = ThemeData.light().copyWith(textTheme: textTheme);
       final MarkdownStyleSheet style1 = MarkdownStyleSheet.fromTheme(theme);
-      final MarkdownStyleSheet style2 = MarkdownStyleSheet(p: TextStyle(color: Colors.red));
+      final MarkdownStyleSheet style2 = MarkdownStyleSheet(p: TextStyle(color: Colors.red), blockquote: TextStyle(fontSize: 16));
 
       final MarkdownStyleSheet merged = style1.merge(style2);
       expect(merged.p.color, Colors.red);
+      expect(merged.blockquote.fontSize, 16);
+      expect(merged.blockquote.color, theme.textTheme.bodyText2.color);
     });
 
     testWidgets('create based on which theme', (WidgetTester tester) async {
