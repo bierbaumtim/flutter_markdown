@@ -20,7 +20,7 @@ typedef void MarkdownTapLinkCallback(String href);
 /// Signature for custom image widget.
 ///
 /// Used by [MarkdownWidget.imageBuilder]
-typedef Widget MarkdownImageBuilder(Uri uri);
+typedef Widget MarkdownImageBuilder(Uri uri, String title, String alt);
 
 /// Signature for custom checkbox widget.
 ///
@@ -34,6 +34,30 @@ abstract class SyntaxHighlighter {
   // ignore: one_member_abstracts
   /// Returns the formatted [TextSpan] for the given string.
   TextSpan format(String source);
+}
+
+abstract class MarkdownElementBuilder {
+  /// Called when an Element has been reached, before its children have been
+  /// visited.
+  void visitElementBefore(md.Element element) {}
+
+  /// Called when a text node has been reached.
+  ///
+  /// If [MarkdownWidget.styleSheet] has a style of this tag, will passing
+  /// to [preferredStyle].
+  ///
+  /// If you needn't build a widget, return null.
+  Widget visitText(md.Text text, TextStyle preferredStyle) => null;
+
+  /// Called when an Element has been reached, after its children have been
+  /// visited.
+  ///
+  /// If [MarkdownWidget.styleSheet] has a style of this tag, will passing
+  /// to [preferredStyle].
+  ///
+  /// If you needn't build a widget, return null.
+  Widget visitElementAfter(md.Element element, TextStyle preferredStyle) =>
+      null;
 }
 
 /// Enum to specify which theme being used when creating [MarkdownStyleSheet]
@@ -70,9 +94,11 @@ abstract class MarkdownWidget extends StatefulWidget {
     this.extensionSet,
     this.imageBuilder,
     this.checkboxBuilder,
+    this.builders = const {},
     this.fitContent = false,
   })  : assert(data != null),
         assert(selectable != null),
+        assert(builders != null),
         super(key: key);
 
   /// The Markdown to display.
@@ -115,6 +141,19 @@ abstract class MarkdownWidget extends StatefulWidget {
   /// Call when build a checkbox widget.
   final MarkdownCheckboxBuilder checkboxBuilder;
 
+  /// Render certain tags, usually used with [extensionSet]
+  ///
+  /// For example, we will add support for `sub` tag:
+  ///
+  /// ```dart
+  /// builders: {
+  ///   'sub': SubscriptBuilder(),
+  /// }
+  /// ```
+  ///
+  /// The `SubscriptBuilder` is a subclass of [MarkdownElementBuilder].
+  final Map<String, MarkdownElementBuilder> builders;
+
   /// Whether to allow the widget to fit the child content.
   final bool fitContent;
 
@@ -127,7 +166,8 @@ abstract class MarkdownWidget extends StatefulWidget {
   _MarkdownWidgetState createState() => _MarkdownWidgetState();
 }
 
-class _MarkdownWidgetState extends State<MarkdownWidget> implements MarkdownBuilderDelegate {
+class _MarkdownWidgetState extends State<MarkdownWidget>
+    implements MarkdownBuilderDelegate {
   List<Widget> _children;
   final List<GestureRecognizer> _recognizers = <GestureRecognizer>[];
 
@@ -140,7 +180,8 @@ class _MarkdownWidgetState extends State<MarkdownWidget> implements MarkdownBuil
   @override
   void didUpdateWidget(MarkdownWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.data != oldWidget.data || widget.styleSheet != oldWidget.styleSheet) {
+    if (widget.data != oldWidget.data ||
+        widget.styleSheet != oldWidget.styleSheet) {
       _parseMarkdown();
     }
   }
@@ -152,15 +193,24 @@ class _MarkdownWidgetState extends State<MarkdownWidget> implements MarkdownBuil
   }
 
   void _parseMarkdown() {
-    final MarkdownStyleSheet fallbackStyleSheet = kFallbackStyle(context, widget.styleSheetTheme);
-    final MarkdownStyleSheet styleSheet = fallbackStyleSheet.merge(widget.styleSheet);
+    final MarkdownStyleSheet fallbackStyleSheet =
+        kFallbackStyle(context, widget.styleSheetTheme);
+    final MarkdownStyleSheet styleSheet =
+        fallbackStyleSheet.merge(widget.styleSheet);
 
     _disposeRecognizers();
 
-    final List<String> lines = widget.data.split(RegExp(r'\r?\n'));
+    /// FIXME: Enhance it using a single RegEx
+    final List<String> lines = widget.data
+        .replaceAll(RegExp(r'[ ]{2}(\r?\n)'), '  &amp;')
+        .split(RegExp(r'\r?\n'))
+        .map((e) => e?.replaceAll(RegExp(r'  &amp;'), '  \n'))
+        .toList();
     final md.Document document = md.Document(
       extensionSet: widget.extensionSet ?? md.ExtensionSet.gitHubFlavored,
-      inlineSyntaxes: [TaskListSyntax()],
+      inlineSyntaxes: (widget.extensionSet?.inlineSyntaxes ?? [])
+        ..add(TaskListSyntax())
+        ..map((syntax) => syntax),
       encodeHtml: false,
     );
     final MarkdownBuilder builder = MarkdownBuilder(
@@ -170,6 +220,7 @@ class _MarkdownWidgetState extends State<MarkdownWidget> implements MarkdownBuil
       imageDirectory: widget.imageDirectory,
       imageBuilder: widget.imageBuilder,
       checkboxBuilder: widget.checkboxBuilder,
+      builders: widget.builders,
       fitContent: widget.fitContent,
     );
     _children = builder.build(document.parseLines(lines));
@@ -177,7 +228,8 @@ class _MarkdownWidgetState extends State<MarkdownWidget> implements MarkdownBuil
 
   void _disposeRecognizers() {
     if (_recognizers.isEmpty) return;
-    final List<GestureRecognizer> localRecognizers = List<GestureRecognizer>.from(_recognizers);
+    final List<GestureRecognizer> localRecognizers =
+        List<GestureRecognizer>.from(_recognizers);
     _recognizers.clear();
     for (GestureRecognizer recognizer in localRecognizers) recognizer.dispose();
   }
@@ -228,6 +280,7 @@ class MarkdownBody extends MarkdownWidget {
     md.ExtensionSet extensionSet,
     MarkdownImageBuilder imageBuilder,
     MarkdownCheckboxBuilder checkboxBuilder,
+    Map<String, MarkdownElementBuilder> builders = const {},
     this.shrinkWrap = true,
     this.fitContent = true,
   }) : super(
@@ -242,6 +295,7 @@ class MarkdownBody extends MarkdownWidget {
           extensionSet: extensionSet,
           imageBuilder: imageBuilder,
           checkboxBuilder: checkboxBuilder,
+          builders: builders,
         );
 
   /// See [ScrollView.shrinkWrap]
@@ -255,7 +309,8 @@ class MarkdownBody extends MarkdownWidget {
     if (children.length == 1) return children.single;
     return Column(
       mainAxisSize: shrinkWrap ? MainAxisSize.min : MainAxisSize.max,
-      crossAxisAlignment: fitContent ? CrossAxisAlignment.start : CrossAxisAlignment.stretch,
+      crossAxisAlignment:
+          fitContent ? CrossAxisAlignment.start : CrossAxisAlignment.stretch,
       children: children,
     );
   }
@@ -284,6 +339,7 @@ class Markdown extends MarkdownWidget {
     md.ExtensionSet extensionSet,
     MarkdownImageBuilder imageBuilder,
     MarkdownCheckboxBuilder checkboxBuilder,
+    Map<String, MarkdownElementBuilder> builders = const {},
     this.padding = const EdgeInsets.all(16.0),
     this.controller,
     this.physics,
@@ -300,6 +356,7 @@ class Markdown extends MarkdownWidget {
           extensionSet: extensionSet,
           imageBuilder: imageBuilder,
           checkboxBuilder: checkboxBuilder,
+          builders: builders,
         );
 
   /// The amount of space by which to inset the children.
@@ -309,7 +366,7 @@ class Markdown extends MarkdownWidget {
   ///
   /// See also: [ScrollView.controller]
   final ScrollController controller;
-  
+
   /// How the scroll view should respond to user input.
   ///
   /// See also: [ScrollView.physics]
