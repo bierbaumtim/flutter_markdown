@@ -50,7 +50,7 @@ class MarkdownStyleSheet {
     this.orderedListAlign = WrapAlignment.start,
     this.blockquoteAlign = WrapAlignment.start,
     this.codeblockAlign = WrapAlignment.start,
-    this.textScaleFactor = 1.0,
+    this.textScaleFactor,
   }) : _styles = <String, TextStyle>{
           'a': a,
           'p': p,
@@ -130,6 +130,7 @@ class MarkdownStyleSheet {
           ),
         ),
       ),
+      // textScaleFactor: 
     );
   }
 
