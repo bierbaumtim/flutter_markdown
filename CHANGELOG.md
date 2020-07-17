@@ -1,4 +1,4 @@
-## 0.4.4
+## 0.4.3
 
  * Fix merging of `MarkdownStyleSheets`
  * Fix if not provided in `MarkdownStyleSheet` textScaleFactor uses default value of 1.0 instead using the textScaleFactor of the nearest MediaQuery 
