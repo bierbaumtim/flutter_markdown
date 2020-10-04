@@ -138,6 +138,12 @@ class MarkdownBuilder implements md.NodeVisitor {
   bool _isInBlockquote = false;
   final List<String> _tags = <String>[];
 
+  /// The soft line break pattern is use to identify the spaces at the end of a
+  /// line of text and the leading spaces in the immediately following the line
+  /// of text. These spaces are removed in accordance with the Markdown
+  /// specification on soft line breaks when lines of text are joined.
+  final RegExp _softLineBreakPattern = RegExp(r" ?\n *");
+
   /// Returns widgets that display the given Markdown nodes.
   ///
   /// The returned widgets are typically used as children in a [ListView].
@@ -173,10 +179,13 @@ class MarkdownBuilder implements md.NodeVisitor {
       builders[tag].visitElementBefore(element);
     }
 
+    var start;
     if (_isBlockTag(tag)) {
       _addAnonymousBlockIfNeeded();
       if (_isListTag(tag)) {
         _listIndents.add(tag);
+        if (element.attributes["start"] != null)
+          start = int.parse(element.attributes["start"]) - 1;
       } else if (tag == 'blockquote') {
         _isInBlockquote = true;
       } else if (tag == 'table') {
@@ -190,7 +199,9 @@ class MarkdownBuilder implements md.NodeVisitor {
           children: <Widget>[],
         ));
       }
-      _blocks.add(_BlockElement(tag));
+      var bElement = _BlockElement(tag);
+      if (start != null) bElement.nextListIndex = start;
+      _blocks.add(bElement);
     } else {
       _addParentInlineIfNeeded(_blocks.last.tag);
 
@@ -233,7 +244,9 @@ class MarkdownBuilder implements md.NodeVisitor {
           style: _isInBlockquote
               ? _inlines.last.style.merge(styleSheet.blockquote)
               : _inlines.last.style,
-          text: text.text.replaceAll(RegExp(r" ?\n"), " "),
+          text: _isInBlockquote
+              ? text.text
+              : text.text.replaceAll(_softLineBreakPattern, " "),
           recognizer: _linkHandlers.isNotEmpty ? _linkHandlers.last : null,
         ),
         textAlign: _textAlignForBlockTag(_currentBlockTag),
@@ -574,10 +587,26 @@ class MarkdownBuilder implements md.NodeVisitor {
   }
 
   Widget _buildRichText(TextSpan text, {TextAlign textAlign}) {
+    // Combine text spans with equivalent properties into a single span.
+    if (text.children != null && text.children.length > 1) {
+      TextSpan firstChild = text.children.first;
+      if (text.children.every((element) => (element is TextSpan &&
+          element.recognizer == firstChild.recognizer &&
+          element.semanticsLabel == firstChild.semanticsLabel &&
+          element.style == firstChild.style))) {
+        text = TextSpan(
+          text: text.toPlainText(),
+          recognizer: firstChild.recognizer,
+          semanticsLabel: firstChild.semanticsLabel,
+          style: firstChild.style,
+        );
+      }
+    }
+
     if (selectable) {
       return SelectableText.rich(
         text,
-        //textScaleFactor: styleSheet.textScaleFactor,
+        textScaleFactor: styleSheet.textScaleFactor,
         textAlign: textAlign ?? TextAlign.start,
       );
     } else {
