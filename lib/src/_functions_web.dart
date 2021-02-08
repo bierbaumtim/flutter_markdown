@@ -12,7 +12,8 @@ import 'package:path/path.dart' as p;
 import 'style_sheet.dart';
 import 'widget.dart';
 
-typedef Widget ImageBuilder(Uri uri, String imageDirectory, double width, double height);
+typedef Widget ImageBuilder(
+    Uri uri, String imageDirectory, double width, double height);
 
 final ImageBuilder kDefaultImageBuilder = (
   Uri uri,
@@ -37,22 +38,31 @@ final ImageBuilder kDefaultImageBuilder = (
   }
 };
 
-final MarkdownStyleSheet Function(BuildContext, MarkdownStyleSheetBaseTheme) kFallbackStyle = (
+final MarkdownStyleSheet Function(BuildContext, MarkdownStyleSheetBaseTheme)
+    kFallbackStyle = (
   BuildContext context,
   MarkdownStyleSheetBaseTheme baseTheme,
 ) {
+  MarkdownStyleSheet result;
   switch (baseTheme) {
     case MarkdownStyleSheetBaseTheme.platform:
       final String userAgent = window.navigator.userAgent;
-      return userAgent.contains('Mac OS X')
+      result = userAgent.contains('Mac OS X')
           ? MarkdownStyleSheet.fromCupertinoTheme(CupertinoTheme.of(context))
           : MarkdownStyleSheet.fromTheme(Theme.of(context));
+      break;
     case MarkdownStyleSheetBaseTheme.cupertino:
-      return MarkdownStyleSheet.fromCupertinoTheme(CupertinoTheme.of(context));
+      result =
+          MarkdownStyleSheet.fromCupertinoTheme(CupertinoTheme.of(context));
+      break;
     case MarkdownStyleSheetBaseTheme.material:
     default:
-      return MarkdownStyleSheet.fromTheme(Theme.of(context));
+      result = MarkdownStyleSheet.fromTheme(Theme.of(context));
   }
+
+  return result.copyWith(
+    textScaleFactor: MediaQuery.textScaleFactorOf(context),
+  );
 };
 
 Widget _handleDataSchemeUri(Uri uri, final double width, final double height) {

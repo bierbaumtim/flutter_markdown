@@ -1,6 +1,49 @@
+## 0.5.0
+
+ * BREAKING CHANGE: `MarkdownTapLinkCallback` now has three parameters, not one, exposing more
+   information about a tapped link.
+   * Note for upgraders, the old single parameter `href` is now the second parameter to match the specification.
+ * Android example upgraded
+ * Test coverage updated to match GitHub Flavoured Markdown and CommonMark
+ * Handle links with empty descriptions
+ * Handle empty rows in tables
+
+## 0.4.4
+
+ * Fix handling of newline character in blockquote
+ * Add new example demo
+ * Use the start attribute in ordered list to set the first number
+ * Revert changes made in PR #235 (which broke newline handling)
+
+## 0.4.3
+
+ * Fix merging of `MarkdownStyleSheets`
+ * Fix `MarkdownStyleSheet` textScaleFactor to use default value of 1.0, if not provided, instead using the textScaleFactor of the nearest MediaQuery 
+
+## 0.4.2
+
+ * Fix parsing of image caption & alt attributes
+ * Fix baseline alignment in lists
+ * Support `LineBreakSyntax`
+
+## 0.4.1
+
+ * Downgrade Flutter minimum from 1.17.1 to 1.17.0 for Pub
+
+## 0.4.0
+
+ * Updated for Flutter 1.17
+ * Ignore newlines in paragraphs
+ * Improve handling of horizontal rules
+
+## 0.3.5
+
+ * Fix hardcoded colors and improve Darktheme
+ * Fix text alignment when formatting is involved
+
 ## 0.3.4
 
- * Add the support for text paragraphs and blockquotes.
+ * Add support for text paragraphs and blockquotes.
 
 ## 0.3.3
 
@@ -29,8 +72,8 @@ See [flutter/flutter_markdown issue #156](https://github.com/flutter/flutter_mar
 
 ## 0.3.0
 
- * Supporting GitHub flavoured Markdown
- * Supporting strikethrough
+ * Support GitHub flavoured Markdown
+ * Support strikethrough
  * Convert TextSpan to use new InlineSpan API
 
 ## 0.2.0
